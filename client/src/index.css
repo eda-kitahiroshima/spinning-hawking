@@ -1,0 +1,101 @@
+:root {
+  --bg-color: #0c0c0e;
+  --surface-color: #1a1a1e;
+  --surface-hover: #25252a;
+  --primary-gradient: linear-gradient(135deg, #6c5ce7, #a29bfe);
+  --text-primary: #ffffff;
+  --text-secondary: #a1a1aa;
+  --border-color: rgba(255, 255, 255, 0.1);
+  --glass-bg: rgba(26, 26, 30, 0.6);
+  --font-family: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-family);
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  outline: none;
+  font-family: inherit;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--surface-hover);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #3f3f46;
+}
+
+/* Utilities */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.gradient-text {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* AppCard Component Styles */
+.app-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+.app-card:hover img {
+  transform: scale(1.05);
+}
+
+.app-card:hover div[style*="opacity: 0"] {
+  /* Targeting the overlay. Ideally I would use class names in JSX but inline styles + class hooks work too */
+  opacity: 1 !important;
+}
+
+/* Specific fix for the overlay selector since I used inline styles for opacity in JSX.
+   Better approach: Use className "overlay" I added in JSX.
+*/
+.app-card .overlay {
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.app-card:hover .overlay {
+  opacity: 1;
+}
+
+.delete-button:hover {
+  color: #e74c3c !important;
+}
