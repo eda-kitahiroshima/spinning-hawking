@@ -17,6 +17,7 @@ app.use(express.json());
 app.use(express.static('public'));
 
 const upload = require('./storage'); // New storage module
+const { generateAppCode } = require('./ai-service'); // AI code generation
 
 // --- ファイルアップロード設定 (Removed inline multer) ---
 // public/uploads creation is handled inside storage.js for local mode
@@ -273,6 +274,34 @@ app.post('/api/auth/login', async (req, res) => {
     res.json({ token, username: user.username, userId: user.id });
   } catch (err) {
     res.status(500).json({ error: err.message });
+  }
+});
+
+// --- AI Code Generation Endpoint ---
+app.post('/api/ai/generate', async (req, res) => {
+  const { prompt } = req.body;
+
+  if (!prompt) {
+    return res.status(400).json({ error: 'プロンプトが必要です' });
+  }
+
+  if (!process.env.GEMINI_API_KEY) {
+    return res.status(500).json({
+      error: 'サーバーでAI APIキーが設定されていません。管理者に連絡してください。'
+    });
+  }
+
+  try {
+    console.log('🤖 AI code generation started...');
+    const generatedCode = await generateAppCode(prompt);
+    console.log('✅ AI code generation completed');
+    res.json({ code: generatedCode });
+  } catch (error) {
+    console.error('❌ AI Generation Error:', error);
+    res.status(500).json({
+      error: 'AI生成に失敗しました',
+      details: error.message
+    });
   }
 });
 

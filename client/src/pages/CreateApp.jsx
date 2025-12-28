@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import API_BASE_URL from '../config';
+import { apiFetch } from '../lib/api';
 
 const CreateApp = () => {
     const location = useLocation();
@@ -20,6 +21,7 @@ const CreateApp = () => {
     // State for generated code & prompt
     const [generatedCode, setGeneratedCode] = useState('');
     const [copyFeedback, setCopyFeedback] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
     // Initial prompt for remixing
     const [remixPrompt, setRemixPrompt] = useState('');
 
@@ -107,6 +109,28 @@ ${errorLogs ? `【発生しているエラーログ】\n${errorLogs}\n` : ''}
 1. **完全なシングルファイル**（index.htmlのみ）で出力すること。
 2. エラーの原因を特定し、確実に修正すること。
 3. **HTMLコードそのものだけ** を出力してください（解説不要）。`;
+    };
+
+    const handleGenerate = async () => {
+        setIsGenerating(true);
+
+        try {
+            const promptText = generatePrompt();
+
+            const response = await apiFetch('/api/ai/generate', {
+                method: 'POST',
+                body: { prompt: promptText }
+            });
+
+            setGeneratedCode(response.code);
+            setCurrentStep(6); // Move to preview
+            alert('✅ AIによるコード生成が完了しました！');
+        } catch (error) {
+            console.error('Generation error:', error);
+            alert(`❌ 生成に失敗しました: ${error.message}`);
+        } finally {
+            setIsGenerating(false);
+        }
     };
 
     const handleCopy = () => {
@@ -266,13 +290,13 @@ ${errorLogs ? `【発生しているエラーログ】\n${errorLogs}\n` : ''}
                 />
             </div>
 
-            {/* Step 5: Copy Prompt */}
+            {/* Step 5: AI Generation or Copy Prompt */}
             {currentStep === 5 && (
                 <div style={{ ...styles.card, maxWidth: '800px', margin: '0 auto' }}>
                     <div style={styles.stepIndicator}>FINAL STEP</div>
                     <h2 style={styles.question}>プロンプトが完成しました！</h2>
                     <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>
-                        以下のボタンを押してコピーし、ChatGPTやClaudeに貼り付けてください。
+                        AIで自動生成するか、プロンプトをコピーして手動で貼り付けるか選択してください。
                     </p>
 
                     <div style={styles.promptPreview}>
@@ -281,9 +305,18 @@ ${errorLogs ? `【発生しているエラーログ】\n${errorLogs}\n` : ''}
 
                     <div style={styles.navButtons}>
                         <button onClick={prevStep} style={styles.secondaryButton}>戻る</button>
-                        <button onClick={handleCopy} style={styles.primaryButton}>
-                            {copyFeedback || '📋 プロンプトをコピーして次へ'}
-                        </button>
+                        <div style={{ display: 'flex', gap: '1rem' }}>
+                            <button
+                                onClick={handleGenerate}
+                                disabled={isGenerating}
+                                style={{ ...styles.primaryButton, opacity: isGenerating ? 0.6 : 1 }}
+                            >
+                                {isGenerating ? '🤖 生成中...' : '✨ AIで自動生成'}
+                            </button>
+                            <button onClick={handleCopy} style={styles.secondaryButton}>
+                                {copyFeedback || '📋 コピー（手動）'}
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
