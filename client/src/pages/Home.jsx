@@ -1,7 +1,6 @@
 import React from 'react';
 import AppGrid from '../components/AppGrid';
 import API_BASE_URL from '../config';
-import API_BASE_URL from '../config'; // Adjusted path
 import { Link } from 'react-router-dom';
 
 const Home = () => {
