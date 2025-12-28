@@ -10,8 +10,8 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  */
 async function generateAppCode(prompt) {
     try {
-        // Use Gemini 1.5 Flash model (fast and free)
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+        // Use specific version ID for stability
+        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-001' });
 
         // Generate content
         const result = await model.generateContent(prompt);
