@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import API_BASE_URL from '../config';
+import { apiFetch } from '../lib/api';
 
 const Login = ({ onLogin }) => {
     const navigate = useNavigate();
@@ -31,22 +31,13 @@ const Login = ({ onLogin }) => {
         setMsg('');
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+            const data = await apiFetch('/api/auth/login', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
+                body: {
                     username: formData.username,
                     password: formData.password
-                }),
+                }
             });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'ログインに失敗しました。');
-            }
 
             // Save token and user info
             localStorage.setItem('token', data.token);

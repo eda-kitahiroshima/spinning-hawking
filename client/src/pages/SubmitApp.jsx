@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import API_BASE_URL from '../config';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { apiFetch } from '../lib/api';
 
 const SubmitApp = () => {
     const navigate = useNavigate();
@@ -46,7 +46,6 @@ const SubmitApp = () => {
         setError('');
 
         const userId = localStorage.getItem('userId');
-        const token = localStorage.getItem('token');
 
         if (!userId) {
             setError('ユーザーIDが見つかりません。再読み込みしてください。');
@@ -69,25 +68,11 @@ const SubmitApp = () => {
                 formDataObj.append('screenshot', file);
             }
 
-            const response = await fetch(`${API_BASE_URL}/api/apps`, {
+            // apiFetchは自動的にFormDataに対応します
+            await apiFetch('/api/apps', {
                 method: 'POST',
                 body: formDataObj,
             });
-
-            if (!response.ok) {
-                const text = await response.text();
-                try {
-                    const errorData = JSON.parse(text);
-                    throw new Error(errorData.error || 'アプリケーションの登録に失敗しました');
-                } catch (e) {
-                    // Fallback if not JSON
-                    if (e.message !== 'アプリケーションの登録に失敗しました' && !text.trim().startsWith('{')) {
-                        console.error('Non-JSON error response:', text);
-                        throw new Error(`サーバーエラー(HTML): ${text.replace(/<[^>]*>?/gm, '').slice(0, 100)}...`);
-                    }
-                    throw e;
-                }
-            }
 
             // Success
             navigate('/');

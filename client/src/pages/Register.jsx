@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import API_BASE_URL from '../config';
+import { apiFetch } from '../lib/api';
 
 const Register = () => {
     const navigate = useNavigate();
@@ -28,22 +28,13 @@ const Register = () => {
         }
 
         try {
-            const response = await fetch(`${API_BASE_URL}/api/auth/register`, {
+            await apiFetch('/api/auth/register', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
+                body: {
                     username: formData.username,
                     password: formData.password
-                }),
+                }
             });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || '登録に失敗しました。');
-            }
 
             // 成功したらログイン画面へ
             navigate('/login', { state: { message: '登録が完了しました。ログインしてください。' } });
