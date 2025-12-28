@@ -299,8 +299,7 @@ app.post('/api/ai/generate', async (req, res) => {
   } catch (error) {
     console.error('❌ AI Generation Error:', error);
     res.status(500).json({
-      error: 'AI生成に失敗しました',
-      details: error.message
+      error: `AI生成エラー: ${error.message || '不明なエラー'}`
     });
   }
 });
