@@ -1,7 +1,15 @@
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 
 const Header = ({ user, onLogout }) => {
+    const navigate = useNavigate();
+
+    const handleHomeClick = (e) => {
+        e.preventDefault();
+        navigate('/', { replace: true });
+        window.location.href = '/'; // Force full page reload to clear all state
+    };
+
     return (
         <header style={styles.header}>
             <div className="container" style={styles.inner}>
@@ -14,13 +22,13 @@ const Header = ({ user, onLogout }) => {
                     {user ? (
                         <>
                             <span style={styles.username}>Hello, {user.username}</span>
-                            <Link to="/" style={styles.link}>ホーム</Link>
+                            <a href="/" onClick={handleHomeClick} style={styles.link}>ホーム</a>
                             <Link to="/dashboard" style={styles.link}>Dashboard</Link>
                             <button onClick={onLogout} style={styles.logoutButton}>Logout</button>
                         </>
                     ) : (
                         <>
-                            <Link to="/" style={styles.link}>ホーム</Link>
+                            <a href="/" onClick={handleHomeClick} style={styles.link}>ホーム</a>
                             <Link to="/login" style={styles.link}>Login</Link>
                             <Link to="/register" style={styles.registerButton}>Register</Link>
                         </>
