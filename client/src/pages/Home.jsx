@@ -1,6 +1,6 @@
 import React from 'react';
 import AppGrid from '../components/AppGrid';
-import API_BASE_URL from '../config';
+import { apiFetch } from '../lib/api';
 import { Link } from 'react-router-dom';
 
 const Home = () => {
@@ -10,21 +10,23 @@ const Home = () => {
     const [selectedTag, setSelectedTag] = React.useState('');
 
     React.useEffect(() => {
-        // Fetch top tags
-        fetch(`${API_BASE_URL}/api/tags/top`)
-            .then(res => res.json())
-            .then(data => {
+        // Fetch top tags using apiFetch
+        const fetchTags = async () => {
+            try {
+                const data = await apiFetch('/api/tags/top');
                 if (Array.isArray(data)) {
                     setTags(data);
                 } else {
                     console.error("Tags data is not an array:", data);
                     setTags([]);
                 }
-            })
-            .catch(err => {
-                console.error(err);
+            } catch (err) {
+                console.error("Failed to fetch tags:", err);
                 setTags([]);
-            });
+            }
+        };
+
+        fetchTags();
     }, []);
 
     const handleSearch = (e) => {
@@ -43,8 +45,8 @@ const Home = () => {
         }
     };
 
-    // Construct fetch URL based on filters
-    let fetchUrl = `${API_BASE_URL}/api/apps`;
+    // Construct fetch URL based on filters (path only, not full URL)
+    let fetchUrl = `/api/apps`;
     const params = new URLSearchParams();
     if (searchTerm) params.append('q', searchTerm);
     if (selectedTag) params.append('tag', selectedTag);
