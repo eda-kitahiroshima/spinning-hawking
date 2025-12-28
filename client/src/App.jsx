@@ -8,6 +8,7 @@ import CreateApp from './pages/CreateApp';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import API_BASE_URL from './config';
 
 function App() {
   const [user, setUser] = React.useState(null);
@@ -60,6 +61,7 @@ function App() {
 
         <footer style={{ textAlign: 'center', padding: '4rem 0', color: 'var(--text-secondary)', borderTop: '1px solid var(--border-color)', marginTop: '4rem' }}>
           <p>&copy; {new Date().getFullYear()} DevStudio. All rights reserved.</p>
+          <p style={{ fontSize: '0.8rem', opacity: 0.5, marginTop: '0.5rem' }}>API: {API_BASE_URL}</p>
         </footer>
       </div>
     </Router>

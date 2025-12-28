@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import AppCard from './AppCard';
-import API_BASE_URL from '../config';
+import { apiFetch, API_BASE_URL } from '../lib/api';
 
-const AppGrid = ({ fetchUrl = `${API_BASE_URL}/api/apps`, showControls = false, token = null, onEdit }) => {
+const AppGrid = ({ fetchUrl = `/api/apps`, showControls = false, token = null, onEdit }) => {
     const [apps, setApps] = useState([]);
     const [loading, setLoading] = useState(true);
 
@@ -14,16 +14,17 @@ const AppGrid = ({ fetchUrl = `${API_BASE_URL}/api/apps`, showControls = false, 
                     headers['Authorization'] = `Bearer ${token} `;
                 }
 
-                const response = await fetch(fetchUrl, { headers });
-                if (!response.ok) {
-                    // If auth fails for dashboard, might handle differently, but here just throw
-                    throw new Error('Network response was not ok');
+                // fetchUrl might be full URL from older parent components
+                let path = fetchUrl;
+                if (API_BASE_URL && path.startsWith(API_BASE_URL)) {
+                    path = path.replace(API_BASE_URL, '');
                 }
-                const data = await response.json();
+
+                const data = await apiFetch(path, { headers });
                 setApps(data);
             } catch (error) {
                 console.error("Failed to fetch apps:", error);
-                setApps([]); // Clear apps on error
+                setApps([]);
             } finally {
                 setLoading(false);
             }

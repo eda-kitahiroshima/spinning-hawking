@@ -1,4 +1,5 @@
-import { apiUrl } from '../config';
+import { apiUrl, API_BASE_URL } from '../config';
+export { API_BASE_URL };
 
 /**
  * 共通APIフェッチ関数
