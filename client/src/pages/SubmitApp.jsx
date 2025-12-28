@@ -69,7 +69,7 @@ const SubmitApp = () => {
                 formDataObj.append('screenshot', file);
             }
 
-            const response = await fetch(`${API_BASE_URL} /api/apps`, {
+            const response = await fetch(`${API_BASE_URL}/api/apps`, {
                 method: 'POST',
                 body: formDataObj,
             });
