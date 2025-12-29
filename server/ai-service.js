@@ -9,44 +9,44 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  * @returns {Promise<string>} - Generated HTML code
  */
 async function generateAppCode(prompt) {
-  // List of models to try in order of preference (Quality > Speed)
-  const modelsToTry = [
-      'gemini-1.5-pro',      // Highest quality for coding (Best capability)
-      'gemini-1.5-flash',    // Fast and quality (Standard)
-      'gemini-1.0-pro',      // Stable backup (Legacy)
-      'gemini-pro'           // Generic alias (Legacy)
-  ];
-  
-  let lastError = null;
+    // List of models to try in order of preference (Quality > Speed)
+    const modelsToTry = [
+        'gemini-1.0-pro',      // Requested by user for testing
+        'gemini-1.5-pro',      // Highest quality fallback
+        'gemini-1.5-flash',    // Fast fallback
+        'gemini-pro'           // Legacy alias
+    ];
 
-  for (const modelName of modelsToTry) {
-      try {
-          console.log(`🤖 Trying AI model: ${modelName}...`);
-          const model = genAI.getGenerativeModel({ model: modelName });
-          const result = await model.generateContent(prompt);
-          const response = await result.response;
-          let generatedCode = response.text();
+    let lastError = null;
 
-          console.log(`✅ Success with model: ${modelName}`);
+    for (const modelName of modelsToTry) {
+        try {
+            console.log(`🤖 Trying AI model: ${modelName}...`);
+            const model = genAI.getGenerativeModel({ model: modelName });
+            const result = await model.generateContent(prompt);
+            const response = await result.response;
+            let generatedCode = response.text();
 
-          // Clean up markdown code blocks if present
-          generatedCode = generatedCode
-              .replace(/```html\n?/g, '')
-              .replace(/```\n?/g, '')
-              .trim();
+            console.log(`✅ Success with model: ${modelName}`);
 
-          return generatedCode;
-      } catch (error) {
-          console.warn(`⚠️ Failed with model ${modelName}: ${error.message}`);
-          lastError = error;
-          // Continue to next model logic is automatic via loop
-      }
-  }
-  
-  // If all failed
-  const errorMsg = lastError ? lastError.message : 'Unknown error';
-  console.error('❌ All models failed.');
-  throw new Error(`全てのAIモデルで生成に失敗しました: ${errorMsg}`);
+            // Clean up markdown code blocks if present
+            generatedCode = generatedCode
+                .replace(/```html\n?/g, '')
+                .replace(/```\n?/g, '')
+                .trim();
+
+            return generatedCode;
+        } catch (error) {
+            console.warn(`⚠️ Failed with model ${modelName}: ${error.message}`);
+            lastError = error;
+            // Continue to next model logic is automatic via loop
+        }
+    }
+
+    // If all failed
+    const errorMsg = lastError ? lastError.message : 'Unknown error';
+    console.error('❌ All models failed.');
+    throw new Error(`全てのAIモデルで生成に失敗しました: ${errorMsg}`);
 }
 
 module.exports = { generateAppCode };
