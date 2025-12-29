@@ -10,11 +10,15 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  */
 async function generateAppCode(prompt) {
     // List of models to try in order of preference (Quality > Speed)
+    // Note: -latest suffix is required for newer API keys
     const modelsToTry = [
-        'gemini-1.0-pro',      // Requested by user for testing
-        'gemini-1.5-pro',      // Highest quality fallback
-        'gemini-1.5-flash',    // Fast fallback
-        'gemini-pro'           // Legacy alias
+        'gemini-1.5-flash-latest',  // Fast and high quality
+        'gemini-1.5-pro-latest',    // Highest quality
+        'gemini-1.0-pro-latest',    // Stable backup
+        'gemini-1.5-flash',         // Fallback without suffix
+        'gemini-1.5-pro',           // Fallback without suffix
+        'gemini-1.0-pro',           // Fallback without suffix
+        'gemini-pro'                // Legacy alias
     ];
 
     let lastError = null;
