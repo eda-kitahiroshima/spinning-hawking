@@ -10,8 +10,9 @@ const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
  */
 async function generateAppCode(prompt) {
     try {
-        // Use specific version ID for stability
-        const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash-001' });
+        // Use 'gemini-pro' as it is the most stable and widely available model
+        // gemini-1.5-flash may return 404 for some API keys or regions
+        const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
 
         // Generate content
         const result = await model.generateContent(prompt);
