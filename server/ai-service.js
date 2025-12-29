@@ -1,56 +1,53 @@
-const { GoogleGenerativeAI } = require('@google/generative-ai');
+const OpenAI = require('openai');
 
-// Initialize the Gemini AI client
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+// Initialize OpenAI client
+const openai = new OpenAI({
+    apiKey: process.env.OPENAI_API_KEY,
+});
 
 /**
- * Generate app code using Google Gemini AI
+ * Generate app code using OpenAI GPT-4o-mini
  * @param {string} prompt - The prompt to send to the AI
  * @returns {Promise<string>} - Generated HTML code
  */
 async function generateAppCode(prompt) {
-    // List of models to try in order of preference (Quality > Speed)
-    // Note: -latest suffix is required for newer API keys
-    const modelsToTry = [
-        'gemini-1.5-flash-latest',  // Fast and high quality
-        'gemini-1.5-pro-latest',    // Highest quality
-        'gemini-1.0-pro-latest',    // Stable backup
-        'gemini-1.5-flash',         // Fallback without suffix
-        'gemini-1.5-pro',           // Fallback without suffix
-        'gemini-1.0-pro',           // Fallback without suffix
-        'gemini-pro'                // Legacy alias
-    ];
-
-    let lastError = null;
-
-    for (const modelName of modelsToTry) {
-        try {
-            console.log(`🤖 Trying AI model: ${modelName}...`);
-            const model = genAI.getGenerativeModel({ model: modelName });
-            const result = await model.generateContent(prompt);
-            const response = await result.response;
-            let generatedCode = response.text();
-
-            console.log(`✅ Success with model: ${modelName}`);
-
-            // Clean up markdown code blocks if present
-            generatedCode = generatedCode
-                .replace(/```html\n?/g, '')
-                .replace(/```\n?/g, '')
-                .trim();
-
-            return generatedCode;
-        } catch (error) {
-            console.warn(`⚠️ Failed with model ${modelName}: ${error.message}`);
-            lastError = error;
-            // Continue to next model logic is automatic via loop
-        }
+    if (!process.env.OPENAI_API_KEY) {
+        throw new Error('Server OpenAI API key is missing.');
     }
 
-    // If all failed
-    const errorMsg = lastError ? lastError.message : 'Unknown error';
-    console.error('❌ All models failed.');
-    throw new Error(`全てのAIモデルで生成に失敗しました: ${errorMsg}`);
+    try {
+        console.log('🤖 Sending request to OpenAI (gpt-4o-mini)...');
+
+        const completion = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+                {
+                    role: "system",
+                    content: "You are an expert frontend developer. Generate a single-file HTML application containing CSS and JavaScript based on the user's request. Return ONLY the HTML code, no markdown code blocks, no explanations."
+                },
+                {
+                    role: "user",
+                    content: prompt
+                }
+            ],
+            max_tokens: 4000,
+        });
+
+        let generatedCode = completion.choices[0].message.content;
+        console.log('✅ OpenAI generation successful');
+
+        // Clean up markdown code blocks if present (just in case)
+        generatedCode = generatedCode
+            .replace(/```html\n?/g, '')
+            .replace(/```\n?/g, '')
+            .trim();
+
+        return generatedCode;
+
+    } catch (error) {
+        console.error('OpenAI Error:', error);
+        throw new Error(`AI生成に失敗しました: ${error.message}`);
+    }
 }
 
 module.exports = { generateAppCode };

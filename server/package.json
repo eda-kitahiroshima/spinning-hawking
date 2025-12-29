@@ -13,7 +13,6 @@
   "type": "commonjs",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.958.0",
-    "@google/generative-ai": "^0.21.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -21,6 +20,7 @@
     "jsonwebtoken": "^9.0.3",
     "multer": "^2.0.2",
     "multer-s3": "^3.0.1",
+    "openai": "^4.20.1",
     "pg": "^8.16.3",
     "sqlite3": "^5.1.7"
   }

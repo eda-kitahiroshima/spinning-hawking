@@ -285,9 +285,9 @@ app.post('/api/ai/generate', async (req, res) => {
     return res.status(400).json({ error: 'プロンプトが必要です' });
   }
 
-  if (!process.env.GEMINI_API_KEY) {
+  if (!process.env.OPENAI_API_KEY) {
     return res.status(500).json({
-      error: 'サーバーでAI APIキーが設定されていません。管理者に連絡してください。'
+      error: 'サーバーでAI APIキーが設定されていません。管理者に連絡してください (OPENAI_API_KEY)。'
     });
   }
 
