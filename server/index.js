@@ -362,8 +362,8 @@ if (process.env.NODE_ENV === 'production') {
   // Serve static files from React build
   app.use(express.static(path.join(__dirname, '../client/dist')));
 
-  // All other routes return the React app
-  app.get('*', (req, res) => {
+  // All other routes return the React app (Express 5 compatible)
+  app.get('/(.*)', (req, res) => {
     res.sendFile(path.join(__dirname, '../client/dist/index.html'));
   });
 }
