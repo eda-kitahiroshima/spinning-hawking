@@ -73,7 +73,7 @@ async function generateAppCode(prompt) {
                     content: prompt
                 }
             ],
-            max_tokens: 4000,
+            max_completion_tokens: 4000,
         });
 
         let generatedCode = completion.choices[0].message.content;
@@ -115,7 +115,7 @@ async function editAppCode(currentCode, instruction) {
                     content: `CURRENT CODE:\n${currentCode}\n\nINSTRUCTION:\n${instruction}`
                 }
             ],
-            max_tokens: 4000,
+            max_completion_tokens: 4000,
         });
 
         let generatedCode = completion.choices[0].message.content;
