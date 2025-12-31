@@ -1,6 +1,7 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
+import ProtectedRoute from './components/ProtectedRoute';
 import Home from './pages/Home';
 import SubmitApp from './pages/SubmitApp';
 import EditApp from './pages/EditApp';
@@ -50,12 +51,12 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/submit" element={<SubmitApp />} />
-            <Route path="/create-app" element={<CreateApp />} />
-            <Route path="/edit/:id" element={<EditApp />} />
+            <Route path="/submit" element={<ProtectedRoute><SubmitApp /></ProtectedRoute>} />
+            <Route path="/create-app" element={<ProtectedRoute><CreateApp /></ProtectedRoute>} />
+            <Route path="/edit/:id" element={<ProtectedRoute><EditApp /></ProtectedRoute>} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           </Routes>
         </main>
 

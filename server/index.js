@@ -245,6 +245,10 @@ app.delete('/api/apps/:id', async (req, res) => {
 // --- 【重要修正】新規投稿処理 (データベースへのコード保存とURL自動生成) ---
 app.post('/api/apps', upload.single('screenshot'), async (req, res) => {
   const { name, description, code, tags, userId, downloadUrl } = req.body;
+
+  // Convert userId to integer (FormData sends it as string)
+  const userIdInt = userId ? parseInt(userId, 10) : null;
+
   const getPublicUrl = (file) => {
     if (!file) return null;
     if (process.env.AWS_PUBLIC_DOMAIN && file.key) {
@@ -260,7 +264,7 @@ app.post('/api/apps', upload.single('screenshot'), async (req, res) => {
   try {
     const insertRes = await db.query(
       "INSERT INTO apps (name, description, code, screenshotUrl, tags, user_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id",
-      [name, description, code, screenshotUrl, tagsString, userId || null]
+      [name, description, code, screenshotUrl, tagsString, userIdInt]
     );
     const appId = insertRes.rows[0].id;
 
