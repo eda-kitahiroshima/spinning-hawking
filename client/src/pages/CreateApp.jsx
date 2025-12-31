@@ -109,16 +109,20 @@ const CreateApp = () => {
         try {
             // Check if we are editing an existing app (studio mode) or creating new?
             // This is CreateApp, so we are creating new.
+            console.log('Sending API request to /api/ai/generate...');
             const response = await apiFetch('/api/ai/generate', {
                 method: 'POST',
                 body: { prompt }
             });
+            console.log('API response received:', response);
             setGeneratedCode(response.code);
             setCurrentStep(6); // Go to preview
             setLogs([{ type: 'info', message: 'Generated code received.' }]);
         } catch (error) {
-            console.error(error);
-            alert('生成に失敗しました: ' + error.message);
+            console.error('AI Generation Error:', error);
+            const errorMessage = error.message || 'Unknown error occurred';
+            alert(`生成に失敗しました: ${errorMessage}\n\nデバッグ情報: エラーの詳細はブラウザのコンソール（F12）で確認できます。`);
+            setLogs([{ type: 'error', message: `Generation failed: ${errorMessage}` }]);
         } finally {
             setIsGenerating(false);
         }

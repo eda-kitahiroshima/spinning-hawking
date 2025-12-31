@@ -359,13 +359,52 @@ app.post('/api/auth/login', async (req, res) => {
 
 // --- Serve React App in Production ---
 if (process.env.NODE_ENV === 'production') {
-  // Serve static files from React build
-  app.use(express.static(path.join(__dirname, '../client/dist')));
+  const distPath = path.join(__dirname, '../client/dist');
+  const indexPath = path.join(distPath, 'index.html');
 
-  // All other routes return the React app (Express 5 compatible)
-  app.use((req, res) => {
-    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
-  });
+  // Check if dist folder exists
+  if (fs.existsSync(distPath) && fs.existsSync(indexPath)) {
+    console.log('✅ Serving React app from:', distPath);
+    // Serve static files from React build
+    app.use(express.static(distPath));
+
+    // All other routes return the React app (Express 5 compatible)
+    app.use((req, res) => {
+      res.sendFile(indexPath);
+    });
+  } else {
+    console.warn('⚠️  React build files not found. API-only mode.');
+    console.warn('   Expected path:', indexPath);
+    console.warn('   Run "npm run build" in client directory to generate build files.');
+
+    // Fallback: show API-only message for non-API routes
+    app.use((req, res) => {
+      if (!req.path.startsWith('/api') && !req.path.startsWith('/preview')) {
+        res.status(200).send(`
+          <!DOCTYPE html>
+          <html lang="ja">
+          <head>
+            <meta charset="UTF-8">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+            <title>API Only Mode</title>
+            <style>
+              body { font-family: system-ui; max-width: 600px; margin: 100px auto; padding: 20px; text-align: center; }
+              .error { background: #fee; border: 2px solid #fcc; border-radius: 8px; padding: 20px; }
+            </style>
+          </head>
+          <body>
+            <div class="error">
+              <h1>⚠️ Frontend Not Built</h1>
+              <p>Server is running in API-only mode.</p>
+              <p>React build files are missing from: <code>${distPath}</code></p>
+              <p><strong>To fix:</strong> Ensure the build command runs: <code>cd client && npm run build</code></p>
+            </div>
+          </body>
+          </html>
+        `);
+      }
+    });
+  }
 }
 
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
