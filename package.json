@@ -1,0 +1,23 @@
+{
+    "name": "ai-copilot-studio",
+    "version": "1.0.0",
+    "description": "AI-powered app creation and editing platform",
+    "scripts": {
+        "install-all": "cd server && npm install && cd ../client && npm install",
+        "build": "cd client && npm install && npm run build",
+        "start": "cd server && npm start",
+        "dev:server": "cd server && npm start",
+        "dev:client": "cd client && npm run dev"
+    },
+    "engines": {
+        "node": ">=18.0.0"
+    },
+    "keywords": [
+        "ai",
+        "app-builder",
+        "react",
+        "express"
+    ],
+    "author": "",
+    "license": "ISC"
+}

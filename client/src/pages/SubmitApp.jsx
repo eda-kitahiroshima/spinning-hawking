@@ -45,7 +45,7 @@ const SubmitApp = () => {
         setSubmitting(true);
         setError('');
 
-        const userId = localStorage.getItem('userId');
+        const userId = parseInt(localStorage.getItem('userId'), 10);
 
         if (!userId) {
             setError('ユーザーIDが見つかりません。再読み込みしてください。');

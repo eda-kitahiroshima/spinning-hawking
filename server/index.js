@@ -17,7 +17,28 @@ app.use(express.json());
 app.use(express.static('public'));
 
 const upload = require('./storage'); // New storage module
-const { generateAppCode } = require('./ai-service'); // AI code generation
+const { generateAppCode, editAppCode } = require('./ai-service'); // AI code generation
+
+// --- 【新規追加】AI生成・編集エンドポイント ---
+app.post('/api/ai/generate', async (req, res) => {
+  const { prompt } = req.body;
+  try {
+    const code = await generateAppCode(prompt);
+    res.json({ code });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/ai/edit', async (req, res) => {
+  const { currentCode, instruction } = req.body;
+  try {
+    const newCode = await editAppCode(currentCode, instruction);
+    res.json({ code: newCode });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
 
 // --- ファイルアップロード設定 (Removed inline multer) ---
 // public/uploads creation is handled inside storage.js for local mode
@@ -35,6 +56,54 @@ app.get('/preview/:id', async (req, res) => {
     res.send(rows[0].code);
   } catch (err) {
     res.status(500).send("Server Error");
+  }
+});
+
+// --- 【新規追加】公式テンプレート一覧取得 ---
+app.get('/api/templates', async (req, res) => {
+  try {
+    const { rows } = await db.query("SELECT * FROM apps WHERE is_template = TRUE ORDER BY id ASC");
+    res.json(rows.map(row => ({
+      ...row,
+      tags: JSON.parse(row.tags || "[]"),
+      screenshotUrl: row.screenshoturl || row.screenshotUrl
+    })));
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- 【新規追加】テンプレートからフォークして作成 ---
+app.post('/api/apps/fork', async (req, res) => {
+  const { templateId, userId } = req.body;
+  if (!templateId) return res.status(400).json({ error: "Template ID is required" });
+
+  try {
+    // Get template data
+    const { rows } = await db.query("SELECT * FROM apps WHERE id = $1", [templateId]);
+    if (rows.length === 0) return res.status(404).json({ error: "Template not found" });
+    const original = rows[0];
+
+    // Create copy with parent_id set
+    // New name will be "Copy of [Original Name]"
+    const newName = `Copy of ${original.name}`;
+
+    // We don't copy is_template (default false) or public_status (default private)
+    const insertRes = await db.query(
+      "INSERT INTO apps (name, description, code, screenshotUrl, tags, user_id, parent_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+      [newName, original.description, original.code, original.screenshoturl || original.screenshotUrl, original.tags, userId, templateId]
+    );
+    const appId = insertRes.rows[0].id;
+
+    // Generate download/preview URL
+    const baseUrl = process.env.BASE_URL || `${req.protocol}://${req.get('host')}`;
+    const downloadUrl = `${baseUrl}/preview/${appId}`;
+    await db.query("UPDATE apps SET downloadUrl = $1 WHERE id = $2", [downloadUrl, appId]);
+
+    res.status(201).json({ id: appId, message: "Forked successfully" });
+
+  } catch (err) {
+    res.status(500).json({ error: err.message });
   }
 });
 
@@ -59,8 +128,15 @@ app.get('/api/tags/top', async (req, res) => {
 // --- アプリ一覧取得 ---
 app.get('/api/apps', async (req, res) => {
   const { q, tag } = req.query;
+  // Hide templates from main feed usually, unless requested?
+  // For now let's just show everything but maybe distinct visually in frontend.
+  // Actually, users probably want to see regular apps here. Templates are separate.
+  // Let's filter WHERE is_template = FALSE by default unless specified? 
+  // User didn't specify requirements for feed mixed/split. I'll stick to showing ALL for now to avoid hiding user apps.
   let queryText = `SELECT apps.*, COUNT(DISTINCT likes.id) as likeCount, COUNT(DISTINCT comments.id) as commentCount 
-               FROM apps LEFT JOIN likes ON apps.id = likes.app_id LEFT JOIN comments ON apps.id = comments.app_id WHERE 1 = 1`;
+               FROM apps LEFT JOIN likes ON apps.id = likes.app_id LEFT JOIN comments ON apps.id = comments.app_id WHERE is_template = FALSE`;
+  // Changed: Filter out templates from main feed to keep it clean. Templates have their own section.
+
   const params = [];
 
   if (q) {
@@ -277,31 +353,15 @@ app.post('/api/auth/login', async (req, res) => {
   }
 });
 
-// --- AI Code Generation Endpoint ---
-app.post('/api/ai/generate', async (req, res) => {
-  const { prompt } = req.body;
+// --- Serve React App in Production ---
+if (process.env.NODE_ENV === 'production') {
+  // Serve static files from React build
+  app.use(express.static(path.join(__dirname, '../client/dist')));
 
-  if (!prompt) {
-    return res.status(400).json({ error: 'プロンプトが必要です' });
-  }
-
-  if (!process.env.OPENAI_API_KEY) {
-    return res.status(500).json({
-      error: 'サーバーでAI APIキーが設定されていません。管理者に連絡してください (OPENAI_API_KEY)。'
-    });
-  }
-
-  try {
-    console.log('🤖 AI code generation started...');
-    const generatedCode = await generateAppCode(prompt);
-    console.log('✅ AI code generation completed');
-    res.json({ code: generatedCode });
-  } catch (error) {
-    console.error('❌ AI Generation Error:', error);
-    res.status(500).json({
-      error: `AI生成エラー: ${error.message || '不明なエラー'}`
-    });
-  }
-});
+  // All other routes return the React app
+  app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../client/dist/index.html'));
+  });
+}
 
 app.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
