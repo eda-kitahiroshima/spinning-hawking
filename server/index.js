@@ -378,9 +378,13 @@ if (process.env.NODE_ENV === 'production') {
     console.warn('   Run "npm run build" in client directory to generate build files.');
 
     // Fallback: show API-only message for non-API routes
-    app.use((req, res) => {
-      if (!req.path.startsWith('/api') && !req.path.startsWith('/preview')) {
-        res.status(200).send(`
+    app.use((req, res, next) => {
+      // Don't intercept API or preview routes
+      if (req.path.startsWith('/api') || req.path.startsWith('/preview')) {
+        return next();
+      }
+
+      res.status(200).send(`
           <!DOCTYPE html>
           <html lang="ja">
           <head>
@@ -402,7 +406,6 @@ if (process.env.NODE_ENV === 'production') {
           </body>
           </html>
         `);
-      }
     });
   }
 }
