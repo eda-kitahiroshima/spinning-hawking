@@ -60,9 +60,9 @@ async function generateAppCode(prompt) {
     }
 
     try {
-        console.log('🤖 Sending request to OpenAI (gpt-5-nano)...');
+        console.log('🤖 Sending request to OpenAI (gpt-4o-mini)...');
         const completion = await openai.chat.completions.create({
-            model: "gpt-5-nano",
+            model: "gpt-4o-mini",
             messages: [
                 {
                     role: "system",
@@ -102,9 +102,9 @@ async function editAppCode(currentCode, instruction) {
     }
 
     try {
-        console.log('🤖 Sending edit request to OpenAI (gpt-5-nano)...');
+        console.log('🤖 Sending edit request to OpenAI (gpt-4o-mini)...');
         const completion = await openai.chat.completions.create({
-            model: "gpt-5-nano",
+            model: "gpt-4o-mini",
             messages: [
                 {
                     role: "system",
