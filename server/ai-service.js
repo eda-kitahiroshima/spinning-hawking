@@ -66,7 +66,44 @@ async function generateAppCode(prompt) {
             messages: [
                 {
                     role: "system",
-                    content: "You are an expert frontend developer. Generate a single-file HTML application containing CSS and JavaScript based on the user's request. Return ONLY the HTML code, no markdown code blocks, no explanations."
+                    content: `You are an expert frontend developer. Generate a single-file HTML application containing CSS and JavaScript based on the user's request.
+
+IMPORTANT GUIDELINES:
+1. Return ONLY the complete HTML code, no markdown code blocks, no explanations
+2. Use modern, clean, and responsive design
+3. Leverage external libraries via CDN when appropriate
+
+RECOMMENDED LIBRARIES (use CDN):
+- Chart.js for charts/graphs: https://cdn.jsdelivr.net/npm/chart.js
+- Three.js for 3D graphics: https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js
+- D3.js for data visualization: https://d3js.org/d3.v7.min.js
+- Anime.js for animations: https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js
+- Tailwind CSS for styling: https://cdn.tailwindcss.com
+- Axios for HTTP: https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js
+
+WEB APIs TO USE:
+- Canvas API for custom drawings
+- LocalStorage for data persistence
+- Fetch API for external data
+- Geolocation API for location
+- Web Audio API for sound
+
+CODE STRUCTURE:
+- Put all CSS in <style> tags in <head>
+- Put all JavaScript in <script> tags at end of <body>
+- Use modern ES6+ JavaScript
+- Add helpful comments
+- Ensure responsive design (mobile-friendly)
+- Use semantic HTML5 elements
+
+QUALITY STANDARDS:
+- Clean, readable code
+- Proper error handling
+- User-friendly interface
+- Smooth animations and transitions
+- Accessible (ARIA labels where needed)
+
+Return only valid HTML code.`
                 },
                 {
                     role: "user",
