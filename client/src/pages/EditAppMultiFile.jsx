@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import FileManager from '../components/FileManager';
+import CodeEditor from '../components/CodeEditor';
 import { apiFetch } from '../lib/api';
 
 // Simple debounce function
@@ -245,20 +246,11 @@ function EditAppMultiFile() {
                         </label>
                     </div>
 
-                    {/* Textarea */}
-                    <textarea
+                    {/* Code Editor with Syntax Highlighting */}
+                    <CodeEditor
                         value={currentFile?.content || ''}
-                        onChange={(e) => handleCodeChange(e.target.value)}
-                        style={{
-                            flex: 1,
-                            padding: '1rem',
-                            border: 'none',
-                            fontFamily: 'monospace',
-                            fontSize: '14px',
-                            resize: 'none',
-                            outline: 'none'
-                        }}
-                        placeholder="コードを入力..."
+                        onChange={handleCodeChange}
+                        filename={activeFile}
                     />
                 </div>
             </div>
