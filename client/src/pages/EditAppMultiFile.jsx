@@ -88,23 +88,20 @@ function EditAppMultiFile() {
 
     // Actual save function
     const saveFiles = async (filesToSave, ep) => {
-        console.log('🚀 saveFiles called with:', filesToSave.length, 'files, entry:', ep);
         setIsSaving(true);
         setSaveMessage('💾 保存中...');
 
         try {
-            console.log('📡 Sending PUT request to /api/apps/' + id + '/files');
             await apiFetch(`/api/apps/${id}/files`, {
                 method: 'PUT',
                 body: { files: filesToSave, entryPoint: ep }
             });
 
-            console.log('✅ Save successful!');
             setSaveMessage('✅ 保存しました');
             setPreviewKey(prev => prev + 1); // Refresh preview
             setTimeout(() => setSaveMessage(''), 3000);
         } catch (err) {
-            console.error('❌ Save failed:', err);
+            console.error('Save failed:', err);
             setSaveMessage('❌ 保存に失敗しました');
         } finally {
             setIsSaving(false);
@@ -114,19 +111,14 @@ function EditAppMultiFile() {
     // Debounced auto-save (1 second delay)
     const debouncedSave = useMemo(
         () => debounce((filesToSave, ep) => {
-            console.log('🔄 Auto-save triggered, enabled:', autoSaveEnabled);
-            console.log('📁 Files to save:', filesToSave.map(f => f.name));
             if (autoSaveEnabled) {
                 saveFiles(filesToSave, ep);
-            } else {
-                console.log('⏸️ Auto-save is disabled');
             }
         }, 1000),
         [id, autoSaveEnabled]
     );
 
     const handleCodeChange = (newContent) => {
-        console.log('✏️ Code changed, length:', newContent.length);
         const newFiles = files.map(f =>
             f.name === activeFile ? { ...f, content: newContent } : f
         );

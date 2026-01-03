@@ -1,16 +1,10 @@
 import React from 'react';
 
 function CodeEditor({ value, onChange, filename }) {
-    const handleChange = (e) => {
-        const newValue = e.target.value;
-        console.log('🎯 CodeEditor onChange called, new value length:', newValue.length);
-        onChange(newValue);
-    };
-
     return (
         <textarea
             value={value}
-            onChange={handleChange}
+            onChange={(e) => onChange(e.target.value)}
             style={{
                 flex: 1,
                 padding: '1rem',
