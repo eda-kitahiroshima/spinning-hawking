@@ -82,11 +82,20 @@ RECOMMENDED LIBRARIES (use CDN):
 - Axios for HTTP: https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js
 
 WEB APIs TO USE:
-- Canvas API for custom drawings
+- Canvas API for custom drawings and animations (especially particle effects, fireworks, etc.)
+  * Example for fireworks: Use requestAnimationFrame for smooth animation
+  * Create particles array, update positions each frame, draw with arc() or fillRect()
+  * For realistic effects: apply gravity, fade opacity, random velocities
 - LocalStorage for data persistence
 - Fetch API for external data
 - Geolocation API for location
 - Web Audio API for sound
+
+ANIMATION BEST PRACTICES:
+- For particle animations (fireworks, confetti, stars): Use Canvas API with requestAnimationFrame
+- For UI animations (fade, slide, scale): Use CSS transitions or Anime.js
+- Always clear canvas before redrawing: ctx.clearRect(0, 0, width, height)
+- Use performance optimization: limit particle count, remove off-screen particles
 
 CODE STRUCTURE:
 - Put all CSS in <style> tags in <head>
