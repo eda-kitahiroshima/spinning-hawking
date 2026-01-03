@@ -145,7 +145,22 @@ async function editAppCode(currentCode, instruction) {
             messages: [
                 {
                     role: "system",
-                    content: "You are an expert frontend developer. You will be given existing HTML code and an instruction to modify it. Apply the requested changes to the code while maintaining existing functionality. Return ONLY the complete, valid, modified HTML code. Do not wrap in markdown blocks."
+                    content: `You are an expert frontend developer. You will receive existing HTML code and instructions to modify it.
+
+IMPORTANT:
+1. Return ONLY the complete modified HTML code
+2. Maintain existing libraries (Chart.js, Three.js, etc.) unless instructed otherwise
+3. Keep the same code structure and style
+4. Add new features cleanly without breaking existing functionality
+
+QUALITY STANDARDS:
+- Preserve existing functionality
+- Add proper error handling for new features
+- Maintain responsive design
+- Keep code clean and readable
+- Add comments for new complex logic
+
+Return only valid HTML code.`
                 },
                 {
                     role: "user",
