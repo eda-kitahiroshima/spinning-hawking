@@ -111,14 +111,19 @@ function EditAppMultiFile() {
     // Debounced auto-save (1 second delay)
     const debouncedSave = useMemo(
         () => debounce((filesToSave, ep) => {
+            console.log('🔄 Auto-save triggered, enabled:', autoSaveEnabled);
+            console.log('📁 Files to save:', filesToSave.map(f => f.name));
             if (autoSaveEnabled) {
                 saveFiles(filesToSave, ep);
+            } else {
+                console.log('⏸️ Auto-save is disabled');
             }
         }, 1000),
         [id, autoSaveEnabled]
     );
 
     const handleCodeChange = (newContent) => {
+        console.log('✏️ Code changed, length:', newContent.length);
         const newFiles = files.map(f =>
             f.name === activeFile ? { ...f, content: newContent } : f
         );
@@ -141,8 +146,9 @@ function EditAppMultiFile() {
             {/* Header */}
             <div style={{
                 padding: '1rem',
-                borderBottom: '1px solid #ddd',
-                backgroundColor: 'white',
+                borderBottom: '1px solid #333',
+                backgroundColor: '#000',
+                color: '#fff',
                 display: 'flex',
                 justifyContent: 'space-between',
                 alignItems: 'center'
@@ -222,8 +228,9 @@ function EditAppMultiFile() {
                     {/* File Tab */}
                     <div style={{
                         padding: '0.5rem 1rem',
-                        backgroundColor: '#f3f4f6',
-                        borderBottom: '1px solid #ddd',
+                        backgroundColor: '#000',
+                        borderBottom: '1px solid #333',
+                        color: '#fff',
                         display: 'flex',
                         alignItems: 'center',
                         gap: '1rem'
