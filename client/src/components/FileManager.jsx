@@ -7,8 +7,8 @@ function FileManager({ files, activeFile, onFileSelect, onFileAdd, onFileDelete,
     const handleAddFile = () => {
         if (newFileName.trim()) {
             // Validate filename
-            if (!/^[a-zA-Z0-9_-]+\.(html|css|js)$/.test(newFileName)) {
-                alert('ファイル名は英数字_-のみで、拡張子は.html, .css, .jsのいずれかにしてください');
+            if (!/^[a-zA-Z0-9_-]+\.(html|css|js|jsx)$/.test(newFileName)) {
+                alert('ファイル名は英数字_-のみで、拡張子は.html, .css, .js, .jsxのいずれかにしてください');
                 return;
             }
 
@@ -28,6 +28,7 @@ function FileManager({ files, activeFile, onFileSelect, onFileAdd, onFileDelete,
         if (filename.endsWith('.html')) return '📄';
         if (filename.endsWith('.css')) return '🎨';
         if (filename.endsWith('.js')) return '⚙️';
+        if (filename.endsWith('.jsx')) return '⚛️';
         return '📄';
     };
 

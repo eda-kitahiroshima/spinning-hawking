@@ -43,12 +43,37 @@ function combineFiles(files, entryPoint = 'index.html') {
     console.log('Files:', files.map(f => f.name));
     console.log('Entry point:', entryPoint);
 
-    // Find CSS and JS files
+    // Find CSS, JS, and JSX files
     const cssFiles = files.filter(f => f.name.endsWith('.css') && f.name !== entryPoint);
     const jsFiles = files.filter(f => f.name.endsWith('.js') && f.name !== entryPoint);
+    const jsxFiles = files.filter(f => f.name.endsWith('.jsx') && f.name !== entryPoint);
 
     console.log('CSS files:', cssFiles.map(f => f.name));
     console.log('JS files:', jsFiles.map(f => f.name));
+    console.log('JSX files:', jsxFiles.map(f => f.name));
+
+    // If there are JSX files, inject React CDN and Babel
+    if (jsxFiles.length > 0) {
+        console.log('⚛️ React/JSX detected, injecting React CDN and Babel...');
+
+        const reactCDN = `
+    <!-- React CDN -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <!-- Babel Standalone for JSX transpilation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>`;
+
+        // Insert React CDN before </head>
+        if (html.toLowerCase().includes('</head>')) {
+            const headCloseIndex = html.toLowerCase().indexOf('</head>');
+            html = html.slice(0, headCloseIndex) + reactCDN + '\n' + html.slice(headCloseIndex);
+            console.log('✅ Inserted React CDN before </head>');
+        } else {
+            // Fallback: prepend to HTML
+            html = reactCDN + '\n' + html;
+            console.log('⚠️ No </head> found, prepended React CDN');
+        }
+    }
 
     // Inject CSS
     if (cssFiles.length > 0) {
@@ -95,8 +120,26 @@ function combineFiles(files, entryPoint = 'index.html') {
         }
     }
 
-    console.log('=========================');
+    // Inject JSX (with type="text/babel" for Babel transpilation)
+    if (jsxFiles.length > 0) {
+        console.log('⚛️ Injecting JSX files...');
 
+        for (const jsxFile of jsxFiles) {
+            const scriptTag = `<script type="text/babel">\n${jsxFile.content}\n</script>`;
+
+            // Insert before </body>
+            if (html.toLowerCase().includes('</body>')) {
+                const bodyCloseIndex = html.toLowerCase().indexOf('</body>');
+                html = html.slice(0, bodyCloseIndex) + scriptTag + '\n' + html.slice(bodyCloseIndex);
+                console.log(`✅ Inserted ${jsxFile.name} before </body>`);
+            } else {
+                html += scriptTag;
+                console.log(`⚠️ No </body> found, appended ${jsxFile.name}`);
+            }
+        }
+    }
+
+    console.log('=========================');
     return html;
 }
 
