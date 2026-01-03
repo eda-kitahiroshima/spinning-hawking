@@ -9,6 +9,7 @@ import CreateApp from './pages/CreateApp';
 import Register from './pages/Register';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
+import EditAppMultiFile from './pages/EditAppMultiFile';
 import API_BASE_URL from './config';
 
 function App() {
@@ -54,6 +55,7 @@ function App() {
             <Route path="/submit" element={<ProtectedRoute><SubmitApp /></ProtectedRoute>} />
             <Route path="/create-app" element={<ProtectedRoute><CreateApp /></ProtectedRoute>} />
             <Route path="/edit/:id" element={<ProtectedRoute><EditApp /></ProtectedRoute>} />
+            <Route path="/edit-multifile/:id" element={<ProtectedRoute><EditAppMultiFile /></ProtectedRoute>} />
             <Route path="/register" element={<Register />} />
             <Route path="/login" element={<Login onLogin={handleLogin} />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
