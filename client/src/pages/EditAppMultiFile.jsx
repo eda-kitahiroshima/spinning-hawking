@@ -88,20 +88,23 @@ function EditAppMultiFile() {
 
     // Actual save function
     const saveFiles = async (filesToSave, ep) => {
+        console.log('🚀 saveFiles called with:', filesToSave.length, 'files, entry:', ep);
         setIsSaving(true);
         setSaveMessage('💾 保存中...');
 
         try {
+            console.log('📡 Sending PUT request to /api/apps/' + id + '/files');
             await apiFetch(`/api/apps/${id}/files`, {
                 method: 'PUT',
                 body: { files: filesToSave, entryPoint: ep }
             });
 
+            console.log('✅ Save successful!');
             setSaveMessage('✅ 保存しました');
             setPreviewKey(prev => prev + 1); // Refresh preview
             setTimeout(() => setSaveMessage(''), 3000);
         } catch (err) {
-            console.error('Save failed:', err);
+            console.error('❌ Save failed:', err);
             setSaveMessage('❌ 保存に失敗しました');
         } finally {
             setIsSaving(false);
