@@ -1,7 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import FileManager from '../components/FileManager';
 import { apiFetch } from '../lib/api';
+
+// Simple debounce function
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
 
 function EditAppMultiFile() {
     const { id } = useParams();
@@ -12,6 +25,8 @@ function EditAppMultiFile() {
     const [entryPoint, setEntryPoint] = useState('index.html');
     const [isSaving, setIsSaving] = useState(false);
     const [saveMessage, setSaveMessage] = useState('');
+    const [previewKey, setPreviewKey] = useState(0);
+    const [autoSaveEnabled, setAutoSaveEnabled] = useState(true);
 
     // Load app files on mount
     useEffect(() => {
@@ -41,7 +56,9 @@ function EditAppMultiFile() {
             ? '<!DOCTYPE html>\n<html>\n<head>\n  <meta charset="UTF-8">\n  <title>New Page</title>\n</head>\n<body>\n  <h1>Hello</h1>\n</body>\n</html>'
             : filename.endsWith('.css')
                 ? '/* CSS styles */\n'
-                : '// JavaScript code\n';
+                : filename.endsWith('.jsx')
+                    ? '// React component\n'
+                    : '// JavaScript code\n';
 
         setFiles([...files, { name: filename, content: defaultContent }]);
         setActiveFile(filename);
@@ -68,23 +85,19 @@ function EditAppMultiFile() {
         }
     };
 
-    const handleCodeChange = (newContent) => {
-        setFiles(files.map(f =>
-            f.name === activeFile ? { ...f, content: newContent } : f
-        ));
-    };
-
-    const handleSave = async () => {
+    // Actual save function
+    const saveFiles = async (filesToSave, ep) => {
         setIsSaving(true);
-        setSaveMessage('');
+        setSaveMessage('💾 保存中...');
 
         try {
             await apiFetch(`/api/apps/${id}/files`, {
                 method: 'PUT',
-                body: { files, entryPoint }
+                body: { files: filesToSave, entryPoint: ep }
             });
 
             setSaveMessage('✅ 保存しました');
+            setPreviewKey(prev => prev + 1); // Refresh preview
             setTimeout(() => setSaveMessage(''), 3000);
         } catch (err) {
             console.error('Save failed:', err);
@@ -92,6 +105,28 @@ function EditAppMultiFile() {
         } finally {
             setIsSaving(false);
         }
+    };
+
+    // Debounced auto-save (1 second delay)
+    const debouncedSave = useMemo(
+        () => debounce((filesToSave, ep) => {
+            if (autoSaveEnabled) {
+                saveFiles(filesToSave, ep);
+            }
+        }, 1000),
+        [id, autoSaveEnabled]
+    );
+
+    const handleCodeChange = (newContent) => {
+        const newFiles = files.map(f =>
+            f.name === activeFile ? { ...f, content: newContent } : f
+        );
+        setFiles(newFiles);
+        debouncedSave(newFiles, entryPoint);
+    };
+
+    const handleSave = () => {
+        saveFiles(files, entryPoint);
     };
 
     const currentFile = files.find(f => f.name === activeFile);
@@ -113,6 +148,14 @@ function EditAppMultiFile() {
             }}>
                 <h1 style={{ margin: 0, fontSize: '1.25rem' }}>マルチファイルエディタ</h1>
                 <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                    <label style={{ fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer' }}>
+                        <input
+                            type="checkbox"
+                            checked={autoSaveEnabled}
+                            onChange={(e) => setAutoSaveEnabled(e.target.checked)}
+                        />
+                        自動保存
+                    </label>
                     {saveMessage && (
                         <span style={{ fontSize: '0.9rem', color: saveMessage.includes('✅') ? '#10b981' : '#ef4444' }}>
                             {saveMessage}

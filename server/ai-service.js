@@ -66,12 +66,36 @@ async function generateAppCode(prompt) {
             messages: [
                 {
                     role: "system",
-                    content: `You are an expert frontend developer. Generate a single-file HTML application containing CSS and JavaScript based on the user's request.
+                    content: `You are an expert frontend developer skilled in React, JSX, and modern web technologies. Generate web applications based on the user's request.
 
-IMPORTANT GUIDELINES:
-1. Return ONLY the complete HTML code, no markdown code blocks, no explanations
-2. Use modern, clean, and responsive design
-3. Leverage external libraries via CDN when appropriate
+OUTPUT FORMAT:
+For multi-file applications (React/complex apps), return a JSON object:
+{
+  "files": [
+    {"name": "index.html", "content": "..."},
+    {"name": "App.jsx", "content": "..."},
+    {"name": "style.css", "content": "..."}
+  ],
+  "entryPoint": "index.html"
+}
+
+For simple applications, return just the HTML code (no JSON, no markdown).
+
+WHEN TO USE REACT/JSX:
+- Interactive applications with state management
+- Components that need useState, useEffect, etc.
+- Apps with complex UI logic
+- Otherwise, use vanilla HTML/JS for simplicity
+
+REACT/JSX GUIDELINES:
+- Use global React and ReactDOM objects (loaded via CDN, no imports needed)
+- Use functional components with Hooks (useState, useEffect, etc.)
+- Example:
+  function Counter() {
+    const [count, setCount] = React.useState(0);
+    return <button onClick={() => setCount(count + 1)}>Count: {count}</button>;
+  }
+  ReactDOM.render(<Counter />, document.getElementById('root'));
 
 RECOMMENDED LIBRARIES (use CDN):
 - Chart.js for charts/graphs: https://cdn.jsdelivr.net/npm/chart.js
@@ -82,10 +106,7 @@ RECOMMENDED LIBRARIES (use CDN):
 - Axios for HTTP: https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js
 
 WEB APIs TO USE:
-- Canvas API for custom drawings and animations (especially particle effects, fireworks, etc.)
-  * Example for fireworks: Use requestAnimationFrame for smooth animation
-  * Create particles array, update positions each frame, draw with arc() or fillRect()
-  * For realistic effects: apply gravity, fade opacity, random velocities
+- Canvas API for custom drawings and animations
 - LocalStorage for data persistence
 - Fetch API for external data
 - Geolocation API for location
@@ -123,7 +144,27 @@ Return only valid HTML code.`
         });
 
         let generatedCode = completion.choices[0].message.content;
-        return generatedCode.replace(/```html\n?/g, '').replace(/```\n?/g, '').trim();
+
+        // Remove markdown code blocks if present
+        generatedCode = generatedCode.replace(/```(json|html)?\n?/g, '').replace(/```\n?/g, '').trim();
+
+        // Try to parse as JSON (multi-file format)
+        try {
+            const parsed = JSON.parse(generatedCode);
+            if (parsed.files && Array.isArray(parsed.files) && parsed.files.length > 0) {
+                console.log('✅ Multi-file app generated:', parsed.files.map(f => f.name));
+                return parsed; // Return multi-file structure
+            }
+        } catch (e) {
+            // Not JSON, treat as single HTML file
+            console.log('✅ Single-file HTML generated');
+        }
+
+        // Return as single HTML file
+        return {
+            files: [{ name: 'index.html', content: generatedCode }],
+            entryPoint: 'index.html'
+        };
 
     } catch (error) {
         console.error('OpenAI Error:', error);
