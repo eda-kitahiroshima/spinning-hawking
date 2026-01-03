@@ -51,11 +51,22 @@ app.get('/preview/:id', async (req, res) => {
   const { id } = req.params;
   try {
     const { rows } = await db.query("SELECT code FROM apps WHERE id = $1", [id]);
-    if (!rows.length || !rows[0].code) return res.status(404).send("<h1>Application Not Found</h1><p>アプリのコードが見つかりません。</p>");
+    if (!rows.length || !rows[0].code) {
+      return res.status(404).send("<h1>Application Not Found</h1><p>アプリのコードが見つかりません。</p>");
+    }
+
+    // Parse app code (handles both single-file and multi-file)
+    const { parseAppCode, combineFiles } = require('./app-helpers');
+    const { isMultiFile, files, entryPoint } = parseAppCode(rows[0].code);
+
+    // Combine files into single HTML or use as-is
+    const html = isMultiFile ? combineFiles(files, entryPoint) : files[0].content;
+
     res.setHeader('Content-Type', 'text/html');
-    res.send(rows[0].code);
+    res.send(html);
   } catch (err) {
-    res.status(500).send("Server Error");
+    console.error('Preview error:', err);
+    res.status(500).send("<h1>Server Error</h1><p>プレビューの生成に失敗しました。</p>");
   }
 });
 
@@ -318,6 +329,47 @@ app.post('/api/apps/:id/comments', async (req, res) => {
     const insertRes = await db.query("INSERT INTO comments (app_id, user_id, text) VALUES ($1, $2, $3) RETURNING *", [id, userId, text]);
     res.status(201).json(insertRes.rows[0]);
   } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- Multi-File API Endpoints ---
+// Get app files (supports both single-file and multi-file)
+app.get('/api/apps/:id/files', async (req, res) => {
+  const { id } = req.params;
+  try {
+    const { rows } = await db.query("SELECT code FROM apps WHERE id = $1", [id]);
+    if (!rows.length) {
+      return res.status(404).json({ error: 'App not found' });
+    }
+
+    const { parseAppCode } = require('./app-helpers');
+    const { isMultiFile, files, entryPoint } = parseAppCode(rows[0].code);
+
+    res.json({
+      isMultiFile,
+      files,
+      entryPoint
+    });
+  } catch (err) {
+    console.error('Get files error:', err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// Update app files
+app.put('/api/apps/:id/files', async (req, res) => {
+  const { id } = req.params;
+  const { files, entryPoint } = req.body;
+
+  try {
+    const { encodeAppFiles } = require('./app-helpers');
+    const codeString = encodeAppFiles(files, entryPoint);
+
+    await db.query("UPDATE apps SET code = $1 WHERE id = $2", [codeString, id]);
+    res.json({ success: true });
+  } catch (err) {
+    console.error('Update files error:', err);
     res.status(500).json({ error: err.message });
   }
 });
