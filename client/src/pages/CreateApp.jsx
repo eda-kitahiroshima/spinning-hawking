@@ -96,7 +96,8 @@ const CreateApp = () => {
 - デザイン: ${answers.q4_design}
 
 要件:
-- 単一のHTMLファイルで完結すること (HTML, CSS, JS込み)
+- インタラクティブな機能が必要な場合はReact/JSXを使用
+- 複雑なアプリの場合は複数ファイル（HTML, CSS, JSX）に分割
 - TailwindCSSを使用すること
 - 日本語対応
 - レスポンシブデザイン
@@ -107,15 +108,24 @@ const CreateApp = () => {
         setIsGenerating(true);
         const prompt = generatePrompt();
         try {
-            // Check if we are editing an existing app (studio mode) or creating new?
-            // This is CreateApp, so we are creating new.
             console.log('Sending API request to /api/ai/generate...');
             const response = await apiFetch('/api/ai/generate', {
                 method: 'POST',
                 body: { prompt }
             });
             console.log('API response received:', response);
-            setGeneratedCode(response.code);
+
+            // Handle both single-file (string) and multi-file (object) responses
+            if (typeof response.code === 'string') {
+                // Single-file HTML
+                setGeneratedCode(response.code);
+            } else if (response.code && response.code.files) {
+                // Multi-file format - store as JSON
+                setGeneratedCode(JSON.stringify(response.code));
+            } else {
+                throw new Error('Invalid response format from AI');
+            }
+
             setCurrentStep(6); // Go to preview
             setLogs([{ type: 'info', message: 'Generated code received.' }]);
         } catch (error) {
