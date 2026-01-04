@@ -155,30 +155,42 @@ const CreateApp = () => {
     };
 
     const handleSubmit = async (overwrite = false) => {
-        // Logic to save the app
-        const method = 'POST';
-        const url = location.state?.originAppId && overwrite
-            ? `/api/apps/${location.state.originAppId}` // Update exist
-            : '/api/apps'; // Create new
-
-        // If overwrite is false but originAppId exists, it's a fork, handled as create new but maybe linked?
-        // For simplicity here, just create new.
-
         try {
-            // Requires name etc, but we only have code. 
-            // Ideally we should ask for name. For now auto-name.
+            // Check if it's multi-file format (JSON string)
+            let isMultiFile = false;
+            let codeToSave = generatedCode;
+
+            try {
+                const parsed = JSON.parse(generatedCode);
+                if (parsed.files && Array.isArray(parsed.files)) {
+                    isMultiFile = true;
+                }
+            } catch (e) {
+                // Not JSON, single file
+            }
+
             const body = {
                 name: `${answers.q1_type} (${new Date().toLocaleTimeString()})`,
                 description: `AI generated for ${answers.q2_target}`,
-                code: generatedCode,
+                code: codeToSave,
                 userId: parseInt(localStorage.getItem('userId'), 10),
                 is_template: false,
                 public_status: 'private'
             };
 
-            await apiFetch(url, { method, body });
-            alert('アプリを保存しました！');
-            navigate('/dashboard');
+            const response = await apiFetch('/api/apps', {
+                method: 'POST',
+                body
+            });
+
+            // Redirect based on file type
+            if (isMultiFile) {
+                alert('マルチファイルアプリを作成しました！マルチファイルエディタで編集できます。');
+                navigate(`/edit-multifile/${response.id}`);
+            } else {
+                alert('アプリを保存しました！');
+                navigate('/dashboard');
+            }
         } catch (e) {
             alert('保存失敗: ' + e.message);
         }
