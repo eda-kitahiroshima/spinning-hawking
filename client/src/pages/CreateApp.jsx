@@ -115,15 +115,41 @@ const CreateApp = () => {
             });
             console.log('API response received:', response);
 
+
             // Handle both single-file (string) and multi-file (object) responses
+            let isMultiFile = false;
+            let codeToStore = response.code;
+
             if (typeof response.code === 'string') {
                 // Single-file HTML
                 setGeneratedCode(response.code);
             } else if (response.code && response.code.files) {
-                // Multi-file format - store as JSON
-                setGeneratedCode(JSON.stringify(response.code));
+                // Multi-file format
+                isMultiFile = true;
+                codeToStore = JSON.stringify(response.code);
             } else {
                 throw new Error('Invalid response format from AI');
+            }
+
+            // If multi-file, auto-save and redirect to multi-file editor
+            if (isMultiFile) {
+                const body = {
+                    name: `${answers.q1_type} (${new Date().toLocaleTimeString()})`,
+                    description: `AI generated for ${answers.q2_target}`,
+                    code: codeToStore,
+                    userId: parseInt(localStorage.getItem('userId'), 10),
+                    is_template: false,
+                    public_status: 'private'
+                };
+
+                const saveResponse = await apiFetch('/api/apps', {
+                    method: 'POST',
+                    body
+                });
+
+                // Redirect to multi-file editor
+                navigate(`/edit-multifile/${saveResponse.id}`);
+                return;
             }
 
             setCurrentStep(6); // Go to preview
