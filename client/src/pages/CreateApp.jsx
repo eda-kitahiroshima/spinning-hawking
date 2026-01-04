@@ -95,9 +95,21 @@ const CreateApp = () => {
 - 必須機能: ${answers.q3_features}
 - デザイン: ${answers.q4_design}
 
+【重要】出力形式:
+インタラクティブな機能が必要な場合は、以下のJSON形式で複数ファイルとして出力してください：
+{
+  "files": [
+    {"name": "index.html", "content": "<DOCTYPE html>..."},
+    {"name": "App.jsx", "content": "function App() {...}"},
+    {"name": "style.css", "content": "body {...}"}
+  ],
+  "entryPoint": "index.html"
+}
+
+シンプルな静的ページの場合は、単一のHTMLファイルのみを返してください。
+
 要件:
-- インタラクティブな機能が必要な場合はReact/JSXを使用
-- 複雑なアプリの場合は複数ファイル（HTML, CSS, JSX）に分割
+- React/JSXを使う場合は必ず複数ファイル（JSON形式）で返す
 - TailwindCSSを使用すること
 - 日本語対応
 - レスポンシブデザイン
